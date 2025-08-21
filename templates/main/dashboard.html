@@ -1,1 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · MyMuse Ad Studio{% endblock %}
+{% block content %}
+<h1 class="h4 mb-4">Create high‑converting MyMuse scripts</h1>
+
+<div class="row g-4">
+  <!-- 1) TRANSCRIBE -->
+  <div class="col-lg-4">
+    <div class="card p-4 h-100">
+      <span class="badge bg-secondary mb-2">Step 1</span>
+      <h2 class="h5 mb-2">Upload & Transcription</h2>
+      <p class="small muted mb-3">
+        Upload a short video/audio <em>or</em> paste a Reel/YouTube link. We’ll transcribe it and use the flow to write copy.
+      </p>
+      <form method="post" action="{{ url_for('transcribe_route') }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-2">
+          <label class="form-label">Product</label>
+          <input class="form-control" type="text" name="product_name"
+                 placeholder="e.g., dive+ / link+ / beat"
+                 value="{{ product_name or '' }}" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Media file (mp4, mov, webm, mp3, wav, m4a)</label>
+          <input class="form-control" type="file" name="media"
+                 accept=".mp4,.mov,.webm,.mp3,.wav,.m4a">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Or paste a link (Reels / YouTube)</label>
+          <input class="form-control" type="url" name="media_url" placeholder="https://...">
+        </div>
+        <button class="btn btn-primary w-100">Transcribe</button>
+      </form>
+      <div class="small mt-3 muted">
+        Requires <span class="badge badge-soft">FFMPEG</span>.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2) TRAIN (REVIEWS CSV) -->
+  <div class="col-lg-4">
+    <div class="card p-4 h-100">
+      <span class="badge bg-secondary mb-2">Step 2</span>
+      <h2 class="h5 mb-2">Train with Reviews (CSV)</h2>
+      <p class="small muted mb-3">
+        Upload a CSV of customer reviews to “teach” the model your voice. Headers must be
+        <code>product_name,text</code>.
+      </p>
+
+      {% if current_user.is_authenticated and current_user.is_admin %}
+        <form method="post" action="{{ url_for('admin_reviews_upload') }}" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input class="form-control mb-2" type="file" name="csv_file" accept=".csv" required>
+          <button class="btn btn-outline-primary w-100">Upload & Rebuild Index</button>
+        </form>
+        <a class="small d-block mt-2" href="{{ url_for('admin_reviews') }}">Manage reviews index →</a>
+      {% else %}
+        <div class="alert alert-dark small mb-2">
+          CSV upload is available to admins. Ask an admin to grant you access.
+        </div>
+        <a class="btn btn-outline-primary w-100" href="{{ url_for('admin_reviews') }}">Open Reviews Admin</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- 3) GENERATE FROM TRANSCRIPT -->
+  <div class="col-lg-4">
+    <div class="card p-4 h-100">
+      <span class="badge bg-secondary mb-2">Step 3</span>
+      <h2 class="h5 mb-2">Generate Script</h2>
+      <p class="small muted mb-3">
+        Paste a transcript (or use the one we just produced) and generate an ad‑safe script in the MyMuse voice.
+      </p>
+      <form method="post" action="{{ url_for('generate_view') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-2">
+          <label class="form-label">Product</label>
+          <input class="form-control" type="text" name="product_name"
+                 placeholder="e.g., dive+ / link+ / beat"
+                 value="{{ product_name or '' }}" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Transcript</label>
+          <textarea class="form-control" name="transcript_text" rows="7"
+                    placeholder="Paste transcript here…">{{ (transcript or '') | safe }}</textarea>
+        </div>
+        <button class="btn btn-primary w-100">Generate Script</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS PANE -->
+<div class="row g-4 mt-4">
+  <div class="col-lg-6">
+    <div class="card p-4">
+      <h3 class="h6 mb-2">Current Transcript</h3>
+      <pre class="output">{{ (transcript or '') | safe }}</pre>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card p-4">
+      <h3 class="h6 mb-2">Generated Script</h3>
+      {% if generated %}
+        <pre id="generatedScript" class="output">{{ generated | safe }}</pre>
+        <button class="btn btn-outline-primary btn-sm mt-2"
+                type="button"
+                onclick="navigator.clipboard.writeText(document.getElementById('generatedScript').innerText)">
+          Copy Script
+        </button>
+      {% else %}
+        <div class="muted small">Your script will appear here after generation.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
 
