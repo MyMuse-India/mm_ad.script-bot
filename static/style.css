@@ -1,0 +1,62 @@
+:root{--accent:#ff76b6;}
+body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;}
+.navbar{background:#0f1115;}
+.card{border-radius:14px;}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#0b0b0e;}
+.btn-primary:hover{filter:brightness(0.95);}
+pre{white-space:pre-wrap;}
+
+/* Evaluation Styles */
+.evaluation-section {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 1rem;
+}
+
+.score-circle {
+    min-width: 60px;
+    min-height: 60px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.1);
+    font-weight: bold;
+}
+
+.score-circle .fw-bold {
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.score-circle .small {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.evaluation-notes ul li,
+.evaluation-fixes ul li {
+    padding: 0.25rem 0;
+    border-radius: 4px;
+    padding-left: 0.5rem;
+}
+
+.evaluation-notes ul li:hover {
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.evaluation-fixes ul li:hover {
+    background: rgba(255, 193, 7, 0.1);
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
