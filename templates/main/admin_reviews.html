@@ -1,0 +1,89 @@
+﻿{% extends "main/layout.html" %}
+{% block title %}Admin · Reviews{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card p-4">
+      <h3 class="mb-3">Reviews Training Data</h3>
+      <p class="text-muted mb-4">
+        Upload CSV files to train the AI on your brand voice and customer language.
+        Headers must be: <code>product_name,text</code>
+      </p>
+      
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="card bg-body-tertiary border-0 shadow-sm">
+            <div class="card-body p-4">
+              <h5 class="mb-3">Upload CSV</h5>
+              <form method="post" action="{{ url_for('admin_reviews_upload') }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input class="form-control mb-3" type="file" name="csv_file" accept=".csv" required>
+                <button class="btn btn-primary w-100">Upload & Rebuild Index</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="card bg-body-tertiary border-0 shadow-sm">
+            <div class="card-body p-4">
+              <h5 class="mb-3">Instagram Scraping</h5>
+              <p class="text-muted small mb-3">
+                Automatically scrape MyMuse Instagram posts for training data.
+              </p>
+              <a href="{{ url_for('admin_instagram_scrape') }}" class="btn btn-outline-primary w-100">
+                Scrape Instagram → Training Data
+              </a>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="card bg-body-tertiary border-0 shadow-sm">
+            <div class="card-body p-4">
+              <h5 class="mb-3">Auto-Scraper Status</h5>
+              <p class="text-muted small mb-3">
+                Monitor and control the automated Instagram scraping service.
+              </p>
+              <a href="{{ url_for('admin_auto_scraper') }}" class="btn btn-outline-success w-100">
+                View Auto-Scraper Status
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-4 mt-4">
+      <h3 class="h6">Samples</h3>
+      {% if samples %}
+        <ul class="small">
+          {% for s in samples %}
+            <li class="mb-1">{{ s }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="muted small">No samples yet.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card p-4">
+      <h3 class="h6">Index Stats</h3>
+      <dl class="row small">
+        <dt class="col-5 muted">Total reviews</dt>
+        <dd class="col-7">{{ stats.total_docs if stats and stats.total_docs is not none else (stats.get('total_docs') if stats else 0) }}</dd>
+        <dt class="col-5 muted">Products</dt>
+        <dd class="col-7">
+          {% if stats and stats.products %}
+            {{ stats.products|join(', ') }}
+          {% else %}
+            –
+          {% endif %}
+        </dd>
+      </dl>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends "main/layout.html" %}
+{% block title %}Auto-Scraper Status · MyMuse Ad Studio{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3 class="mb-0">Auto-Scraper Status</h3>
+      <a href="{{ url_for('admin_reviews') }}" class="btn btn-outline-secondary btn-sm">← Back to Reviews</a>
+    </div>
+
+    <div class="card bg-body-tertiary border-0 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h5 class="mb-3">Service Status</h5>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="d-flex justify-content-between">
+              <span class="fw-medium">Status:</span>
+              <span class="badge {% if status.is_running %}bg-success{% else %}bg-danger{% endif %}">
+                {{ 'Running' if status.is_running else 'Stopped' }}
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="d-flex justify-content-between">
+              <span class="fw-medium">Enabled:</span>
+              <span class="badge {% if status.enabled %}bg-success{% else %}bg-warning{% endif %}">
+                {{ 'Yes' if status.enabled else 'No' }}
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="d-flex justify-content-between">
+              <span class="fw-medium">Target Profile:</span>
+              <span class="text-primary">@{{ status.target_profile }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="d-flex justify-content-between">
+              <span class="fw-medium">Interval:</span>
+              <span>{{ status.interval_seconds // 3600 }}h {{ (status.interval_seconds % 3600) // 60 }}m</span>
+            </div>
+          </div>
+        </div>
+        
+        {% if status.last_scrape %}
+        <div class="mt-3 pt-3 border-top">
+          <div class="d-flex justify-content-between">
+            <span class="fw-medium">Last Scrape:</span>
+            <span class="text-muted">{{ status.last_scrape[:19].replace('T', ' ') }}</span>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if status.stats %}
+    <div class="card bg-body-tertiary border-0 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h5 class="mb-3">Last Scrape Results</h5>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="text-center">
+              <div class="h4 text-primary mb-1">{{ status.stats.posts_scraped or 0 }}</div>
+              <div class="small text-muted">Posts Scraped</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-center">
+              <div class="h4 text-success mb-1">{{ status.stats.training_examples or 0 }}</div>
+              <div class="small text-muted">Training Examples</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-center">
+              <div class="h4 text-info mb-1">{{ status.stats.profile_stats.followers or 'N/A' }}</div>
+              <div class="small text-muted">Followers</div>
+            </div>
+          </div>
+        </div>
+        
+        {% if status.stats.csv_path %}
+        <div class="mt-3 pt-3 border-top">
+          <div class="small text-muted">
+            <strong>CSV File:</strong> {{ status.stats.csv_path }}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card bg-body-tertiary border-0 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h5 class="mb-3">Manual Control</h5>
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="d-flex gap-2">
+            <button type="submit" name="action" value="force_scrape" class="btn btn-primary">
+              <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+              Trigger Scrape Now
+            </button>
+          </div>
+          <div class="form-text mt-2">
+            This will immediately run a scraping operation and update the training data.
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <h6 class="alert-heading">How Auto-Scraping Works</h6>
+      <ul class="mb-0 small">
+        <li><strong>Automatic:</strong> Runs every {{ status.interval_seconds // 3600 }} hours in the background</li>
+        <li><strong>Target:</strong> Scrapes @{{ status.target_profile }} for new posts and captions</li>
+        <li><strong>Integration:</strong> Automatically imports new data into your review index</li>
+        <li><strong>No Admin Required:</strong> Completely hands-off operation</li>
+        <li><strong>Smart Updates:</strong> Only processes new posts since last scrape</li>
+      </ul>
+    </div>
+
+    <div class="alert alert-warning">
+      <h6 class="alert-heading">Configuration</h6>
+      <p class="mb-0 small">
+        Auto-scraping is controlled via environment variables:<br>
+        <code>AUTO_SCRAPE_ENABLED=true</code> (enable/disable)<br>
+        <code>AUTO_SCRAPE_INTERVAL=3600</code> (seconds between scrapes)<br>
+        <code>MYMUSE_INSTAGRAM_USERNAME=mymuse.in</code> (target profile)
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelector('form').addEventListener('submit', function() {
+  const btn = this.querySelector('button[type="submit"]');
+  const spinner = btn.querySelector('.spinner-border');
+  btn.disabled = true;
+  spinner.classList.remove('d-none');
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Scraping...';
+});
+</script>
+{% endblock %}

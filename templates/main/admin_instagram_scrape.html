@@ -1,0 +1,105 @@
+{% extends "main/layout.html" %}
+{% block title %}Instagram Scraping · MyMuse Ad Studio{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3 class="mb-0">Instagram Scraping & Training</h3>
+      <a href="{{ url_for('admin_reviews') }}" class="btn btn-outline-secondary btn-sm">← Back to Reviews</a>
+    </div>
+
+    <div class="card bg-body-tertiary border-0 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h5 class="mb-3">Scrape MyMuse Instagram Page</h5>
+        <p class="text-muted mb-3">
+          Extract captions, hashtags, and engagement data from Instagram posts to use as training data for script generation.
+          This will automatically import the data into your review index.
+        </p>
+        
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Instagram Username</label>
+              <input class="form-control" type="text" name="username" 
+                     placeholder="e.g., mymuse" required>
+              <div class="form-text">Just the username, without @</div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Product Name</label>
+              <input class="form-control" type="text" name="product_name" 
+                     value="mymuse" placeholder="mymuse">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Max Posts</label>
+              <input class="form-control" type="number" name="max_posts" 
+                     value="50" min="10" max="200">
+            </div>
+          </div>
+          <div class="mt-3">
+            <button type="submit" class="btn btn-primary">
+              <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+              Start Scraping
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card bg-body-tertiary border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h5 class="mb-3">How It Works</h5>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="text-center">
+              <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 48px; height: 48px;">
+                <span class="fw-bold text-primary">1</span>
+              </div>
+              <h6>Scrape</h6>
+              <p class="small text-muted">Uses Selenium to extract post captions, hashtags, and engagement metrics</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-center">
+              <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 48px; height: 48px;">
+                <span class="fw-bold text-primary">2</span>
+              </div>
+              <h6>Clean</h6>
+              <p class="small text-muted">Removes URLs, mentions, emojis and formats for training</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-center">
+              <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 48px; height: 48px;">
+                <span class="fw-bold text-primary">3</span>
+              </div>
+              <h6>Train</h6>
+              <p class="small text-muted">Auto-imports into review index for better script generation</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <h6 class="alert-heading">Requirements</h6>
+      <ul class="mb-0 small">
+        <li>Chrome browser installed</li>
+        <li>Selenium and ChromeDriver (already in requirements.txt)</li>
+        <li>Instagram profile must be public</li>
+        <li>Scraping may take 5-15 minutes depending on post count</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelector('form').addEventListener('submit', function() {
+  const btn = this.querySelector('button[type="submit"]');
+  const spinner = btn.querySelector('.spinner-border');
+  btn.disabled = true;
+  spinner.classList.remove('d-none');
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Scraping...';
+});
+</script>
+{% endblock %}
