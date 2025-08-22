@@ -61,7 +61,7 @@ except Exception:
 
 # Brand-locked generator (your existing agent)
 try:
-    from generate import generate, generate_variations
+    from generate import generate, generate_variations, generate_variations_text_only
 except Exception as e:
     raise RuntimeError(f"generate.py not available or invalid: {e}")
 
@@ -310,6 +310,8 @@ def transcribe_route():
 
         # Generate 10 high-quality script variations with UGC evaluation
         instagram_mode = request.form.get("instagram_mode") == "on"
+        pg13_mode = request.form.get("pg13_mode") == "on"
+        genz_mode = request.form.get("genz_mode") == "on"
         try:
             # Create analysis dict for generate_variations
             analysis_dict = {
@@ -319,10 +321,11 @@ def transcribe_route():
                 "hook": "",
                 "style_tags": [],
                 "structure": {},
-                "tone": ""
+                "tone": "",
+                "genz_mode": genz_mode
             }
-            logger.info(f"Calling generate_variations with: product={product_name}, transcript_length={len(transcript_text)}, instagram_mode={instagram_mode}")
-            result = generate_variations(product_name, transcript_text, analysis_dict, rel_reviews=rel_reviews, instagram_mode=instagram_mode)
+            logger.info(f"Calling generate_variations with: product={product_name}, transcript_length={len(transcript_text)}, instagram_mode={instagram_mode}, pg13_mode={pg13_mode}, genz_mode={genz_mode}")
+            result = generate_variations(product_name, transcript_text, analysis_dict, rel_reviews=rel_reviews, instagram_mode=instagram_mode, pg13_mode=pg13_mode, genz_mode=genz_mode)
             logger.info(f"generate_variations result: {result}")
         except Exception as e:
             logger.error(f"Error in generate_variations: {e}")
@@ -428,11 +431,13 @@ def generate_variations_route():
     try:
         analysis = analyze_agent(transcript_text)
         instagram_mode = request.form.get("instagram_mode") == "on"
+        pg13_mode = request.form.get("pg13_mode") == "on"
+        genz_mode = request.form.get("genz_mode") == "on"
         try:
             rel_reviews = ReviewIndex.search(product_name, transcript_text, k=8)
         except Exception:
             rel_reviews = []
-        payload = generate_variations(product_name, transcript_text, analysis, rel_reviews=rel_reviews, instagram_mode=instagram_mode)
+        payload = generate_variations(product_name, transcript_text, analysis, rel_reviews=rel_reviews, instagram_mode=instagram_mode, pg13_mode=pg13_mode, genz_mode=genz_mode)
         variations = payload.get("variations", [])
         summary = payload.get("summary", "")
         flash("Generated variations successfully.", "success")
@@ -443,6 +448,43 @@ def generate_variations_route():
                                summary=summary)
     except Exception as e:
         logger.exception("Error in /generate_variations: %s", e)
+        flash("Something went wrong while generating variations.", "error")
+        return render_template("main/dashboard.html")
+
+# -----------------------------------------------------------------------------
+# Route: Generate 10 Variations — Text Only (Step 3)
+# -----------------------------------------------------------------------------
+@app.route("/generate_variations_text_only", methods=["POST"])
+@login_required
+@limiter.limit(_cfg("GENERATE_RATE","5 per minute"))
+def generate_variations_text_only_route():
+    transcript_text = (request.form.get("transcript_text_textonly") or "").strip()
+    instagram_mode = request.form.get("instagram_mode_textonly") == "on"
+    if not transcript_text:
+        flash("Please paste a transcript/script.", "warning")
+        return redirect(url_for("dashboard"))
+
+    try:
+        analysis = analyze_agent(transcript_text)
+        pg13_mode = request.form.get("pg13_mode_textonly") == "on"
+        genz_mode = request.form.get("genz_mode_textonly") == "on"
+        payload = generate_variations_text_only(
+            transcript_text=transcript_text,
+            analysis=analysis,
+            count=10,
+            instagram_mode=instagram_mode,
+            pg13_mode=pg13_mode,
+            genz_mode=genz_mode,
+        )
+        variations = payload.get("variations", [])
+        summary = payload.get("summary", "")
+        flash("Generated text-only variations successfully.", "success")
+        return render_template("main/dashboard.html",
+                               transcript=transcript_text,
+                               variations=variations,
+                               summary=summary)
+    except Exception as e:
+        logger.exception("Error in /generate_variations_text_only: %s", e)
         flash("Something went wrong while generating variations.", "error")
         return render_template("main/dashboard.html")
 
