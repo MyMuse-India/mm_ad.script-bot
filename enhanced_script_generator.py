@@ -521,6 +521,7 @@ class EnhancedScriptGenerator:
 
     def _infer_scenario_adaptively(self, patterns: Dict, transcript: str) -> str:
         """Infer scenario from learned patterns - completely adaptive"""
+        transcript_lower = transcript.lower()
         speaker = patterns["speaker_identity"]["count"]
         actions = patterns["action_patterns"]["intent"]
         desires = patterns["desire_patterns"]["primary_desire"]
@@ -529,16 +530,23 @@ class EnhancedScriptGenerator:
         
         # DYNAMIC SCENARIO INFERENCE - learns from pattern combinations
         
-        # PRIORITY: Business couple scenarios (highest priority)
-        if speaker == "multiple" and ("business" in transcript.lower() or "meeting" in transcript.lower() or "press" in transcript.lower() or "launches" in transcript.lower()):
-            if context == "travel":
+        # PRIORITY 1: Travel scenarios (highest priority - check FIRST)
+        travel_keywords = ["airport", "flight", "trip", "journey", "security", "check", "travel", "going", "on my way"]
+        if any(keyword in transcript_lower for keyword in travel_keywords):
+            if speaker == "multiple" and ("business" in transcript_lower or "meeting" in transcript_lower or "press" in transcript_lower or "launches" in transcript_lower):
                 return "business_couple_travel"
+            elif speaker == "multiple":
+                return "couple_travel"
             else:
-                return "business_couple_intimacy"
+                return "solo_travel"
         
-        # Solo scenarios
+        # PRIORITY 2: Business couple scenarios
+        if speaker == "multiple" and ("business" in transcript_lower or "meeting" in transcript_lower or "press" in transcript_lower or "launches" in transcript_lower):
+            return "business_couple_intimacy"
+        
+        # PRIORITY 3: Solo scenarios
         elif speaker == "single":
-            if "bored" in transcript.lower() and "hand" in transcript.lower():
+            if "bored" in transcript_lower and "hand" in transcript_lower:
                 return "solo_masturbation_enhancement"
             elif desires == "pleasure" or desires == "satisfaction":
                 return "solo_pleasure_seeking"
@@ -547,23 +555,14 @@ class EnhancedScriptGenerator:
             else:
                 return "solo_exploration"
         
-        # Couple scenarios (non-business)
+        # PRIORITY 4: Couple scenarios (non-business, non-travel)
         elif speaker == "multiple":
-            if context == "travel":
-                return "couple_travel"
-            elif emotions == "romantic" or desires == "connection":
+            if emotions == "romantic" or desires == "connection":
                 return "couple_intimacy"
             elif emotions == "playful":
                 return "couple_playful_exploration"
             else:
                 return "couple_general"
-        
-        # Travel scenarios (non-couple)
-        elif context == "travel":
-            if speaker == "single":
-                return "solo_travel"
-            else:
-                return "group_travel"
         
         # Default to general exploration
         return "general_exploration"
@@ -830,18 +829,18 @@ class EnhancedScriptGenerator:
         # Cap the score
         return max(-100, min(100, score))
     
-    def _generate_travel_script(self, product_name: str, transcript_text: str, gen_z: bool, context: Dict[str, Any]) -> str:
+    def _generate_travel_script(self, product_name: str, transcript: str, gen_z: bool, context: Dict[str, Any]) -> str:
         """Generate a travel-focused script with security/discretion themes."""
         
         # Calculate target length based on transcript
-        transcript_words = len(transcript_text.split())
+        transcript_words = len(transcript.split())
         target_words = max(transcript_words - 5, 30)  # Allow some flexibility
         
         # Only use speed modes if transcript mentions them
         speed_mention = ""
         if context.get("speed_modes") and context["speed_modes"] > 0:
             # Only include if transcript actually mentioned speed modes
-            if any(phrase in transcript_text.lower() for phrase in ["speed", "modes", "18", "10"]):
+            if any(phrase in transcript.lower() for phrase in ["speed", "modes", "18", "10"]):
                 speed_mention = f" With {context['speed_modes']} speed modes,"
         
         # Airport travel specific hooks
@@ -1338,9 +1337,17 @@ class EnhancedScriptGenerator:
         
         scenario = context.get("primary_scenario", "general")
         
-        # For business couple scenarios, use the powerful business couple variation generator
-        if scenario == "business_couple_intimacy" or scenario == "business_couple_travel":
+        # PRIORITY 1: Travel scenarios - use specialized travel generator
+        if scenario in ["solo_travel", "couple_travel", "business_couple_travel"]:
+            return self._generate_travel_script(product_name, transcript_text, gen_z, context)
+        
+        # PRIORITY 2: Business couple scenarios - use the powerful business couple variation generator
+        elif scenario == "business_couple_intimacy" or scenario == "business_couple_travel":
             return self._generate_unique_couple_variation(product_name, transcript_text, gen_z, context)
+        
+        # PRIORITY 3: Solo masturbation scenarios - use specialized solo generator
+        elif scenario == "solo_masturbation_enhancement":
+            return self._generate_masturbation_male_script(product_name, transcript_text, gen_z, context)
         
         # For other scenarios, use the new dynamic system
         return self._generate_dynamic_script(product_name, transcript_text, gen_z, context)
@@ -1791,15 +1798,24 @@ class EnhancedScriptGenerator:
         scenario = context.get("primary_scenario", "general")
         
         # DYNAMIC SCRIPT GENERATION - learns from transcript patterns
-        if scenario == "business_couple_intimacy" or scenario == "business_couple_travel":
-            # Use the powerful business couple script generator for business scenarios
+        
+        # PRIORITY 1: Travel scenarios - use specialized travel generator
+        if scenario in ["solo_travel", "couple_travel", "business_couple_travel"]:
+            return self._generate_travel_script(product_name, transcript, gen_z, context)
+        
+        # PRIORITY 2: Business couple scenarios - use powerful business couple generator
+        elif scenario in ["business_couple_intimacy", "business_couple_travel"]:
             return self._generate_couple_intimacy_script(product_name, transcript, gen_z, context)
+        
+        # PRIORITY 3: Solo masturbation scenarios - use specialized solo generator
+        elif scenario == "solo_masturbation_enhancement":
+            return self._generate_masturbation_male_script(product_name, transcript, gen_z, context)
+        
+        # PRIORITY 4: Other scenarios - use dynamic system
         elif "solo_focused" in adaptation_strategy:
             return self._generate_solo_dynamic_script(product_name, transcript, gen_z, context)
         elif "relationship_focused" in adaptation_strategy:
             return self._generate_relationship_dynamic_script(product_name, transcript, gen_z, context)
-        elif "travel_appropriate" in adaptation_strategy:
-            return self._generate_travel_dynamic_script(product_name, transcript, gen_z, context)
         elif "solution_focused" in adaptation_strategy:
             return self._generate_solution_dynamic_script(product_name, transcript, gen_z, context)
         else:
