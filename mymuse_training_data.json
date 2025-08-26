@@ -1,0 +1,93 @@
+{
+  "voice_patterns": {
+    "sentence_structures": [
+      "Ready for something amazing?",
+      "Want to enhance your experience?",
+      "Looking for something special?",
+      "Ready to explore new possibilities?",
+      "Time for some self-care?",
+      "Ready to treat yourself?",
+      "Want to make this moment special?",
+      "Need something to enhance your experience?"
+    ]
+  },
+  "customer_language": {
+    "experience_phrases": [
+      "I discovered something amazing",
+      "This changed everything for me",
+      "I never knew pleasure could feel like this",
+      "This is what I've been missing",
+      "Every session feels like a new adventure",
+      "I've never experienced anything like this",
+      "It's become my go-to for relaxation",
+      "The pleasure is beyond what I expected"
+    ]
+  },
+  "product_knowledge": {
+    "features": {
+      "speed_modes": "Variable speed settings",
+      "waterproof": "Water-resistant design",
+      "quiet": "Whisper-quiet operation",
+      "app_control": "Smartphone app integration",
+      "battery": "Long-lasting rechargeable battery"
+    },
+    "specifications": {
+      "material": "Body-safe silicone",
+      "size": "Compact and portable",
+      "weight": "Lightweight design",
+      "charging": "USB-C charging"
+    },
+    "materials": {
+      "silicone": "Premium body-safe silicone",
+      "electronics": "High-quality components",
+      "packaging": "Discrete packaging"
+    },
+    "technology": {
+      "bluetooth": "Wireless connectivity",
+      "app": "Smartphone app control",
+      "battery": "Lithium-ion battery"
+    },
+    "benefits": {
+      "pleasure": "Enhanced pleasure experience",
+      "convenience": "Easy to use and clean",
+      "discretion": "Quiet and private",
+      "versatility": "Multiple speed settings"
+    },
+    "trusted_features_csv": {
+      "dive+": {"speed_modes": 10},
+      "groove+": {"speed_modes": 18}
+    }
+  },
+  "trained_patterns": {
+    "emotional_words": {
+      "excited": 5,
+      "thrilled": 3,
+      "pumped": 2,
+      "ready": 4,
+      "eager": 3,
+      "bored": 2,
+      "tired": 1,
+      "frustrated": 2,
+      "want": 6,
+      "need": 4,
+      "desire": 3,
+      "crave": 2,
+      "wonder": 2,
+      "curious": 3,
+      "interested": 2,
+      "know": 4,
+      "sure": 3,
+      "confident": 2,
+      "fun": 5,
+      "play": 3,
+      "enjoy": 4,
+      "adventure": 3,
+      "thrill": 2
+    },
+    "sentence_lengths": {
+      "average": 8,
+      "min": 5,
+      "max": 15
+    }
+  }
+}
