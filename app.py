@@ -276,13 +276,13 @@ def _cfg(name: str, default: str) -> str:
     return getattr(Config, name, os.getenv(name, default))
 
 try:
-    limiter.init_app(
-        app,
-        default_limits=[_cfg("GLOBAL_DAILY_LIMIT","100 per day"), _cfg("GLOBAL_HOURLY_LIMIT","20 per hour")],
-        key_func=lambda: request.remote_addr or "anon"
-    )
-except Exception:
-    pass
+    limiter.init_app(app)
+    app.config['RATELIMIT_DEFAULT'] = [_cfg("GLOBAL_DAILY_LIMIT","100 per day"), _cfg("GLOBAL_HOURLY_LIMIT","20 per hour")]
+    app.config['RATELIMIT_STORAGE_URL'] = "memory://"
+    app.config['RATELIMIT_STRATEGY'] = "fixed-window"
+except Exception as e:
+    print(f"Rate limiter initialization failed: {e}")
+    limiter = _NoLimiter()
 
 # -----------------------------------------------------------------------------
 # Production-Grade Logging & Monitoring
@@ -292,13 +292,22 @@ log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 log_format = "%(asctime)s [%(levelname)s] %(name)s:%(lineno)d - %(message)s"
 
 # Production logging configuration
+logs_dir = os.path.join(BASE_DIR, "logs")
+os.makedirs(logs_dir, exist_ok=True)
+
+handlers = [logging.StreamHandler()]
+try:
+    log_file_path = os.path.join(logs_dir, "app.log")
+    file_handler = logging.FileHandler(log_file_path, mode="a")
+    handlers.append(file_handler)
+    print(f"✅ File logging enabled: {log_file_path}")
+except Exception as e:
+    print(f"⚠️ File logging disabled: {e}")
+
 logging.basicConfig(
     level=getattr(logging, log_level, logging.INFO),
     format=log_format,
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler(os.path.join(BASE_DIR, "logs", "app.log"), mode="a")
-    ]
+    handlers=handlers
 )
 
 # Ensure logs directory exists
