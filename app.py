@@ -1104,9 +1104,11 @@ def server_error(e):
 # Entrypoint
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
+    # Prefer Render's PORT; fallback to FLASK_PORT, then 10000
     host = os.getenv("FLASK_HOST", "0.0.0.0")
-    port = int(os.getenv("FLASK_PORT", "5000"))
-    debug = os.getenv("FLASK_DEBUG", "true").lower() in ("1","true","yes","on")
+    port_env = os.getenv("PORT") or os.getenv("FLASK_PORT") or "10000"
+    port = int(port_env)
+    debug = (os.getenv("FLASK_DEBUG", "false").lower() in ("1","true","yes","on"))
     app.run(host=host, port=port, debug=debug)
 
 # -----------------------------------------------------------------------------
