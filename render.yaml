@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: mymuse-ad-studio
+    env: python
+    rootDir: mm_ad.script-bot-main
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: gunicorn app:app
