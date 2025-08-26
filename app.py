@@ -251,9 +251,19 @@ def run_startup_tasks():
     except Exception as e:
         print(f"Startup tasks failed: {e}")
 
-# Run startup tasks when app starts
-with app.app_context():
-    run_startup_tasks()
+# Run startup tasks when app starts (only if not skipping)
+if not os.getenv("SKIP_STARTUP", "").lower() in ("1", "true", "yes", "on"):
+    # Run startup tasks in background to avoid blocking port binding
+    import threading
+    def run_startup_background():
+        with app.app_context():
+            run_startup_tasks()
+    
+    startup_thread = threading.Thread(target=run_startup_background, daemon=True)
+    startup_thread.start()
+    print("Startup tasks started in background thread")
+else:
+    print("Skipping startup tasks due to SKIP_STARTUP environment variable")
 
 # -----------------------------------------------------------------------------
 # Init extensions
