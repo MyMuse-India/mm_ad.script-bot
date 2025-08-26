@@ -45,18 +45,101 @@ class ReviewIndex:
         buf = io.StringIO(raw)
 
         reader = csv.DictReader(buf)
-        missing = [h for h in CSV_HEADERS if h not in reader.fieldnames]
-        if missing:
-            raise ValueError(f"CSV missing headers: {missing}. Expected: {CSV_HEADERS}")
-
+        fieldnames = reader.fieldnames or []
+        
+        # INTELLIGENT CSV FORMAT DETECTION
         added = 0
-        for row in reader:
-            p = (row.get("product_name") or "").strip()
-            t = (row.get("text") or "").strip()
-            if not t:
-                continue
-            cls._docs.append(_Doc(product_name=p, text=t))
-            added += 1
+        
+        # Format 1: Standard review format (product_name, text)
+        if "product_name" in fieldnames and "text" in fieldnames:
+            for row in reader:
+                p = (row.get("product_name") or "").strip()
+                t = (row.get("text") or "").strip()
+                if not t:
+                    continue
+                cls._docs.append(_Doc(product_name=p, text=t))
+                added += 1
+        
+        # Format 2: Product features format (product_name, features, specs, etc.)
+        elif "product_name" in fieldnames and "features" in fieldnames:
+            for row in reader:
+                p = (row.get("product_name") or "").strip()
+                if not p:
+                    continue
+                
+                # Build comprehensive product description from all available fields
+                description_parts = []
+                
+                # Add category if available
+                if "category" in fieldnames and row.get("category"):
+                    description_parts.append(f"Category: {row['category']}")
+                
+                # Add control type if available
+                if "control_type" in fieldnames and row.get("control_type"):
+                    description_parts.append(f"Control: {row['control_type']}")
+                
+                # Add app features if available
+                if "app_features" in fieldnames and row.get("app_features"):
+                    description_parts.append(f"App Features: {row['app_features']}")
+                
+                # Add primary use if available
+                if "primary_use" in fieldnames and row.get("primary_use"):
+                    description_parts.append(f"Primary Use: {row['primary_use']}")
+                
+                # Add features if available
+                if "features" in fieldnames and row.get("features"):
+                    description_parts.append(f"Features: {row['features']}")
+                
+                # Add specifications if available
+                specs_parts = []
+                if "specs_run_time_hours" in fieldnames and row.get("specs_run_time_hours"):
+                    specs_parts.append(f"Runtime: {row['specs_run_time_hours']} hours")
+                if "specs_waterproof_rating" in fieldnames and row.get("specs_waterproof_rating"):
+                    specs_parts.append(f"Waterproof: {row['specs_waterproof_rating']}")
+                if "specs_max_volume_db" in fieldnames and row.get("specs_max_volume_db"):
+                    specs_parts.append(f"Max Volume: {row['specs_max_volume_db']} dB")
+                if "specs_charge_time_hours" in fieldnames and row.get("specs_charge_time_hours"):
+                    specs_parts.append(f"Charge Time: {row['specs_charge_time_hours']} hours")
+                if "battery_mAh" in fieldnames and row.get("battery_mAh"):
+                    specs_parts.append(f"Battery: {row['battery_mAh']} mAh")
+                if "voltage" in fieldnames and row.get("voltage"):
+                    specs_parts.append(f"Voltage: {row['voltage']}")
+                if "dimensions_or_size" in fieldnames and row.get("dimensions_or_size"):
+                    specs_parts.append(f"Size: {row['dimensions_or_size']}")
+                if "materials" in fieldnames and row.get("materials"):
+                    specs_parts.append(f"Materials: {row['materials']}")
+                
+                if specs_parts:
+                    description_parts.append(f"Specifications: {'; '.join(specs_parts)}")
+                
+                # Add how to use if available
+                if "how_to_use" in fieldnames and row.get("how_to_use"):
+                    description_parts.append(f"Usage: {row['how_to_use']}")
+                
+                # Combine all parts into a comprehensive text
+                if description_parts:
+                    combined_text = f"{p} - {' '.join(description_parts)}"
+                    cls._docs.append(_Doc(product_name=p, text=combined_text))
+                    added += 1
+        
+        # Format 3: Generic CSV with any structure - try to extract meaningful text
+        else:
+            for row in reader:
+                # Find the first non-empty text field
+                text_content = ""
+                product_name = "Unknown Product"
+                
+                for field, value in row.items():
+                    if value and value.strip():
+                        if "product" in field.lower() or "name" in field.lower():
+                            product_name = value.strip()
+                        elif len(value.strip()) > 10:  # Only use substantial text fields
+                            text_content = value.strip()
+                            break
+                
+                if text_content:
+                    cls._docs.append(_Doc(product_name=product_name, text=text_content))
+                    added += 1
 
         total = len(cls._docs)
         logger.info("Imported %d reviews (total=%d)", added, total)
