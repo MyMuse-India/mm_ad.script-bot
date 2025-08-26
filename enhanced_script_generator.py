@@ -81,7 +81,18 @@ class EnhancedScriptGenerator:
             "This is just the beginning.",
             "Your pleasure journey starts now.",
             "Let's make magic happen.",
-            "Your desires are calling."
+            "Your desires are calling.",
+            "Time to elevate your experience.",
+            "Ready to discover something new?",
+            "Let's turn up the heat.",
+            "Your adventure awaits.",
+            "Time to break the routine.",
+            "Let's create some memories.",
+            "Ready to feel amazing?",
+            "Your moment is now.",
+            "Let's make it count.",
+            "Time to explore your limits.",
+            "Ready to experience the difference?"
         ]
     
     def generate_human_script(self, product_name: str, transcript: str, gen_z: bool = False) -> str:
@@ -91,7 +102,34 @@ class EnhancedScriptGenerator:
         context = self._analyze_transcript(transcript)
         
         # Use the new dynamic script generation system
-        return self._generate_dynamic_script(product_name, transcript, gen_z, context)
+        script = self._generate_dynamic_script(product_name, transcript, gen_z, context)
+        
+        # Apply variety checking to improve quality
+        script = self._ensure_script_variety(script)
+        
+        # SAFETY CHECK: Ensure we never return just a banger ending
+        if script.strip() in self.banger_endings:
+            print(f"WARNING: Script was just a banger ending, generating fallback")
+            # Generate a basic fallback script
+            fallback_script = f"""Ready for something amazing? {product_name} is here to enhance your experience.
+It's like having a secret that makes every moment special.
+We're about to take things to the next level.
+{script}"""
+            return fallback_script
+        
+        # ADDITIONAL SAFETY CHECK: Ensure script has multiple lines
+        lines = [line.strip() for line in script.split('\n') if line.strip()]
+        if len(lines) < 3:  # If script has less than 3 lines
+            print(f"WARNING: Script too short ({len(lines)} lines), generating enhanced fallback")
+            # Generate an enhanced fallback script
+            enhanced_script = f"""Ready for something amazing? {product_name} is here to enhance your experience.
+It's like having a secret that makes every moment special.
+We're about to take things to the next level.
+{script}
+Your adventure awaits."""
+            return enhanced_script
+        
+        return script
     
     def _generate_masturbation_script(self, product_name: str, transcript: str, gen_z: bool, context: Dict[str, Any]) -> str:
         """Generate masturbation-focused script based on detected emotions and context"""
@@ -269,29 +307,58 @@ class EnhancedScriptGenerator:
     
     def _analyze_transcript(self, transcript: str) -> Dict[str, Any]:
         """TRULY DYNAMIC transcript analysis that learns and adapts to ANY scenario"""
-        transcript_lower = transcript.lower()
-        
-        # DYNAMIC PATTERN LEARNING - no hardcoded rules, learns from transcript content
-        patterns = self._learn_patterns_from_transcript(transcript)
-        
-        # ADAPTIVE SCENARIO DETECTION - infers from learned patterns
-        scenario = self._infer_scenario_adaptively(patterns, transcript)
-        
-        # DYNAMIC EMOTION EXTRACTION - learns emotional language from transcript
-        emotions = self._extract_emotions_dynamically(transcript, patterns)
-        
-        # CONTEXT INFERENCE - builds understanding from transcript structure
-        context = self._build_context_dynamically(transcript, patterns)
-        
-        return {
-            "primary_scenario": scenario,
-            "learned_patterns": patterns,
-            "emotions": emotions,
-            "context": context,
-            "transcript_length": len(transcript.split()),
-            "key_insights": self._extract_key_insights(transcript, patterns),
-            "adaptation_strategy": self._determine_adaptation_strategy(patterns, context),
-        }
+        try:
+            print(f"🔍 DEBUG: _analyze_transcript called with transcript: {transcript[:50]}...")
+            
+            transcript_lower = transcript.lower()
+            
+            # DYNAMIC PATTERN LEARNING - no hardcoded rules, learns from transcript content
+            print("🔍 DEBUG: Learning patterns from transcript...")
+            patterns = self._learn_patterns_from_transcript(transcript)
+            print(f"✅ DEBUG: Patterns learned: {list(patterns.keys())}")
+            
+            # ADAPTIVE SCENARIO DETECTION - infers from learned patterns
+            print("🔍 DEBUG: Inferring scenario adaptively...")
+            scenario = self._infer_scenario_adaptively(patterns, transcript)
+            print(f"✅ DEBUG: Scenario detected: {scenario}")
+            
+            # DYNAMIC EMOTION EXTRACTION - learns emotional language from transcript
+            print("🔍 DEBUG: Extracting emotions dynamically...")
+            emotions = self._extract_emotions_dynamically(transcript, patterns)
+            print(f"✅ DEBUG: Emotions extracted: {list(emotions.keys())}")
+            
+            # CONTEXT INFERENCE - builds understanding from transcript structure
+            print("🔍 DEBUG: Building context dynamically...")
+            context = self._build_context_dynamically(transcript, patterns)
+            print(f"✅ DEBUG: Context built: {list(context.keys())}")
+            
+            result = {
+                "primary_scenario": scenario,
+                "learned_patterns": patterns,
+                "emotions": emotions,
+                "context": context,
+                "transcript_length": len(transcript.split()),
+                "key_insights": self._extract_key_insights(transcript, patterns),
+                "adaptation_strategy": self._determine_adaptation_strategy(patterns, context),
+            }
+            
+            print(f"✅ DEBUG: _analyze_transcript completed successfully")
+            return result
+            
+        except Exception as e:
+            print(f"⚠️ ERROR in _analyze_transcript: {e}")
+            import traceback
+            traceback.print_exc()
+            # Return a basic fallback context
+            return {
+                "primary_scenario": "general",
+                "learned_patterns": {},
+                "emotions": {"primary_emotion": "neutral"},
+                "context": {"setting": "general"},
+                "transcript_length": len(transcript.split()),
+                "key_insights": [],
+                "adaptation_strategy": "standard",
+            }
 
     def _learn_patterns_from_transcript(self, transcript: str) -> Dict[str, Any]:
         """Learn patterns directly from transcript content - no assumptions"""
@@ -318,11 +385,11 @@ class EnhancedScriptGenerator:
             "age_group": "unknown",
         }
         
-        # Learn from pronouns and references
-        if "i'm" in text or "i am" in text or "my" in text:
-            identity["count"] = "single"
-        elif "we" in text or "us" in text or "our" in text:
+        # Learn from pronouns and references - PRIORITY: Check for "we" first
+        if "we" in text or "us" in text or "our" in text or "each other" in text:
             identity["count"] = "multiple"
+        elif "i'm" in text or "i am" in text or "my" in text:
+            identity["count"] = "single"
         
         # Learn gender from context
         if any(word in text for word in ["boy", "man", "guy", "he", "him"]):
@@ -528,20 +595,27 @@ class EnhancedScriptGenerator:
         context = patterns["context_clues"]["physical_setting"]
         emotions = patterns["emotional_language"]["emotional_tone"]
         
+        # DEBUG: Print what we detected
+        print(f"DEBUG: Speaker: {speaker}, Context: {context}, Actions: {actions}")
+        
         # DYNAMIC SCENARIO INFERENCE - learns from pattern combinations
         
         # PRIORITY 1: Travel scenarios (highest priority - check FIRST)
         travel_keywords = ["airport", "flight", "trip", "journey", "security", "check", "travel", "going", "on my way"]
         if any(keyword in transcript_lower for keyword in travel_keywords):
             if speaker == "multiple" and ("business" in transcript_lower or "meeting" in transcript_lower or "press" in transcript_lower or "launches" in transcript_lower):
+                print(f"DEBUG: Detected business_couple_travel")
                 return "business_couple_travel"
             elif speaker == "multiple":
+                print(f"DEBUG: Detected couple_travel")
                 return "couple_travel"
             else:
+                print(f"DEBUG: Detected solo_travel")
                 return "solo_travel"
         
         # PRIORITY 2: Business couple scenarios
         if speaker == "multiple" and ("business" in transcript_lower or "meeting" in transcript_lower or "press" in transcript_lower or "launches" in transcript_lower):
+            print(f"DEBUG: Detected business_couple_intimacy")
             return "business_couple_intimacy"
         
         # PRIORITY 3: Solo scenarios
@@ -565,6 +639,7 @@ class EnhancedScriptGenerator:
                 return "couple_general"
         
         # Default to general exploration
+        print(f"DEBUG: Defaulting to general_exploration")
         return "general_exploration"
 
     def _extract_emotions_dynamically(self, transcript: str, patterns: Dict) -> Dict[str, Any]:
@@ -829,123 +904,114 @@ class EnhancedScriptGenerator:
         # Cap the score
         return max(-100, min(100, score))
     
-    def _generate_travel_script(self, product_name: str, transcript: str, gen_z: bool, context: Dict[str, Any]) -> str:
-        """Generate a travel-focused script with security/discretion themes."""
+    def _generate_travel_script(self, product_name: str, transcript_text: str, gen_z: bool, context: Dict[str, Any]) -> str:
+        """Generate travel-focused script with excitement matching transcript energy"""
         
-        # Calculate target length based on transcript
-        transcript_words = len(transcript.split())
-        target_words = max(transcript_words - 5, 30)  # Allow some flexibility
-        
-        # Only use speed modes if transcript mentions them
-        speed_mention = ""
-        if context.get("speed_modes") and context["speed_modes"] > 0:
-            # Only include if transcript actually mentioned speed modes
-            if any(phrase in transcript.lower() for phrase in ["speed", "modes", "18", "10"]):
-                speed_mention = f" With {context['speed_modes']} speed modes,"
-        
-        # Airport travel specific hooks
-        hooks = [
-            "Some things you don't leave behind.",
-            "My kind of travel companion is simple.",
-            "Every trip feels softer with dive+.",
-            "Travel feels lighter with dive+ by my side.",
-            "I never leave home without my dive+.",
-            "dive+ travels with me, no questions asked.",
-            "It fits in, quietly.",
-            "Every journey needs a secret weapon.",
-            "My travel essentials are simple.",
-            "Some companions make every trip better."
-        ]
-        
-        # Airport security specific lines
-        security_lines = [
-            "Security never knows what's in my bag.",
-            "Security check? Smooth, invisible.",
-            "Security? No stress - it's completely discreet.",
-            "Security is calm, effortless.",
-            "Even airport checks don't notice.",
-            "Security won't know what hit them — it's that quiet.",
-            "Security never clocks it — it's that subtle.",
-            "Security check? This thing is invisible to them.",
-            "Security check? No problem — it's whisper-quiet.",
-            "Airport security never notices dive+."
-        ]
-        
-        # Travel comfort lines
-        comfort_lines = [
-            "It stays with me wherever I go.",
-            "It's just part of my rhythm.",
-            "It slips right into my day.",
-            "I carry what feels good.",
-            "I carry comfort, always.",
-            "It's part of how I move.",
-            "It's like having a secret that makes every trip better.",
-            "It's just part of my travel routine.",
-            "It's like having a special companion that fits in my pocket.",
-            "It's my companion in every journey."
-        ]
-        
-        # Travel adventure lines
-        adventure_lines = [
-            "Let's just say we love exploring together.",
-            "We're about to make this trip unforgettable.",
-            "We're about to turn this flight into an adventure.",
-            "We're about to make this journey extraordinary.",
-            "We make every trip more fun.",
-            "It's like having a special travel companion that makes every journey better.",
-            "Let's just say we love taking pleasure places.",
-            "We're about to turn this flight into something special.",
-            "It's like having a special companion that makes every journey better.",
-            "We're about to make this journey legendary."
-        ]
-        
-        # Select random elements
-        hook = random.choice(hooks)
-        security = random.choice(security_lines)
-        comfort = random.choice(comfort_lines)
-        adventure = random.choice(adventure_lines)
-        
-        # Build the script as separate lines
-        lines = []
-        
-        # Line 1: Hook
-        if "dive+ is one of them" in hook:
-            lines.append(hook)
-        else:
-            lines.append(f"{hook} dive+ is one of them.")
-        
-        # Line 2: Security
-        lines.append(security)
-        
-        # Line 3: Comfort
-        lines.append(comfort)
-        
-        # Line 4: Adventure
-        lines.append(adventure)
-        
-        # Line 5: Banger ending
-        banger = random.choice(self.banger_endings)
-        lines.append(banger)
-        
-        # Add speed mention only if transcript had it
-        if speed_mention:
-            # Insert speed mention after the first line
-            lines[0] = lines[0] + speed_mention
-        
-        # Ensure we meet target word count
-        current_words = sum(len(line.split()) for line in lines)
-        if current_words < target_words:
-            # Add more detail to existing lines
-            enhanced_lines = []
-            for line in lines[:-1]:  # Don't modify the banger ending
-                if len(line.split()) < 8:  # If line is too short
-                    enhanced_lines.append(f"{line} It's absolutely incredible.")
-                else:
-                    enhanced_lines.append(line)
-            enhanced_lines.append(lines[-1])  # Add banger ending
-            lines = enhanced_lines
-        
-        return "\n".join(lines)
+        try:
+            # Analyze transcript energy level
+            transcript_lower = transcript_text.lower()
+            is_excited = any(word in transcript_lower for word in ["look who", "gotta love", "we made it", "everything's all good"])
+            is_confident = any(word in transcript_lower for word in ["we really like", "take each other places", "made it"])
+            
+            lines = []
+            
+            # Dynamic opening based on transcript energy
+            if is_excited:
+                openings = [
+                    f"Look who's coming with me on this trip! {product_name} is my secret weapon.",
+                    f"Guess what's in my bag? {product_name} is my travel essential.",
+                    f"Ready for this? {product_name} is my journey companion.",
+                    f"Plot twist: {product_name} is my travel hack.",
+                    f"Story time: {product_name} makes every trip better."
+                ]
+            else:
+                openings = [
+                    f"Every journey needs a companion. {product_name} is mine.",
+                    f"My travel essentials are simple. {product_name} is one of them.",
+                    f"Some things you don't leave behind. {product_name} is one of them.",
+                    f"Travel feels lighter with {product_name} by my side.",
+                    f"It fits in, quietly. {product_name} is my secret."
+                ]
+            
+            lines.append(random.choice(openings))
+            
+            # Security/airport line with variety
+            security_lines = [
+                "Security never clocks it — it's that subtle.",
+                "Airport checks don't notice a thing.",
+                "Security won't know what hit them — it's that quiet.",
+                "Even TSA doesn't see it coming.",
+                "Security check? No problem — it's whisper-quiet.",
+                "Airport security never notices dive+.",
+                "Security never knows what's in my bag.",
+                "Even airport checks don't notice."
+            ]
+            lines.append(random.choice(security_lines))
+            
+            # Comfort/companionship line
+            comfort_lines = [
+                "It's like having a secret that makes every trip better.",
+                "It's my companion in every journey.",
+                "It's part of how I move through the world.",
+                "It's just part of my travel routine.",
+                "It's like having a special travel companion.",
+                "It's my secret weapon for every adventure.",
+                "It's what makes every journey special.",
+                "It's my essential travel hack."
+            ]
+            lines.append(random.choice(comfort_lines))
+            
+            # Journey enhancement line
+            journey_lines = [
+                "We're about to make this journey extraordinary.",
+                "We're about to turn this flight into an adventure.",
+                "We're about to make this trip unforgettable.",
+                "We're about to create some amazing memories.",
+                "We're about to make this journey legendary.",
+                "We're about to turn this trip into something special.",
+                "We're about to make this flight incredible.",
+                "We're about to take this journey to the next level."
+            ]
+            lines.append(random.choice(journey_lines))
+            
+            # Dynamic ending based on context
+            if is_confident:
+                endings = [
+                    "Let's just say we love taking pleasure places.",
+                    "Let's just say we love exploring together.",
+                    "Let's just say we love making memories.",
+                    "Let's just say we love the journey.",
+                    "Let's just say we love the adventure."
+                ]
+            else:
+                endings = [
+                    "Ready to discover something new?",
+                    "Time to elevate your experience.",
+                    "Your adventure awaits.",
+                    "Let's make this trip count.",
+                    "Ready to feel amazing?"
+                ]
+            
+            lines.append(random.choice(endings))
+            
+            # Add banger ending
+            banger = random.choice(self.banger_endings)
+            lines.append(banger)
+            
+            # Ensure variety and return
+            script = "\n".join(lines)
+            return self._ensure_script_variety(script)
+            
+        except Exception as e:
+            print(f"ERROR in travel script generation: {e}")
+            # FALLBACK: Return a basic travel script
+            fallback_script = f"""Every journey needs a companion. {product_name} is mine.
+Security never clocks it — it's that subtle.
+It's like having a secret that makes every trip better.
+We're about to make this journey extraordinary.
+Let's just say we love taking pleasure places.
+{random.choice(self.banger_endings)}"""
+            return fallback_script
     
     def _generate_business_travel_script(self, product_name: str, transcript_text: str, gen_z: bool, context: Dict[str, Any]) -> str:
         """Generate a business travel couple script with luxury/intimacy focus"""
@@ -1280,6 +1346,7 @@ class EnhancedScriptGenerator:
     def generate_variations(self, product_name: str, transcript: str, count: int = 10, gen_z: bool = False) -> List[Dict[str, Any]]:
         """Generate multiple unique variations using training data"""
         
+        # Analyze transcript ONCE at the beginning
         context = self._analyze_transcript(transcript)
         variations = []
         
@@ -1289,11 +1356,8 @@ class EnhancedScriptGenerator:
         
         for i in range(count):
             try:
-                # Generate base script
-                script = self.generate_human_script(product_name, transcript, gen_z)
-                
-                # Create variation by applying different patterns
-                variation = self._create_variation(script, product_name, transcript, gen_z, context)
+                # Create variation directly using the context we already have
+                variation = self._create_variation("", product_name, transcript, gen_z, context)
                 
                 # Ensure variation is not empty or None
                 if variation and len(variation.strip()) > 0:
@@ -1337,20 +1401,23 @@ class EnhancedScriptGenerator:
         
         scenario = context.get("primary_scenario", "general")
         
-        # PRIORITY 1: Travel scenarios - use specialized travel generator
-        if scenario in ["solo_travel", "couple_travel", "business_couple_travel"]:
-            return self._generate_travel_script(product_name, transcript_text, gen_z, context)
-        
-        # PRIORITY 2: Business couple scenarios - use the powerful business couple variation generator
-        elif scenario == "business_couple_intimacy" or scenario == "business_couple_travel":
-            return self._generate_unique_couple_variation(product_name, transcript_text, gen_z, context)
-        
+        # PRIORITY 1: Business couple scenarios - use the powerful business couple variation generator
+        if scenario == "business_couple_intimacy" or scenario == "business_couple_travel":
+            script = self._generate_unique_couple_variation(product_name, transcript_text, gen_z, context)
+        # PRIORITY 2: Travel scenarios - use specialized travel generator (but not business_couple_travel)
+        elif scenario in ["solo_travel", "couple_travel"]:
+            script = self._generate_travel_script(product_name, transcript_text, gen_z, context)
         # PRIORITY 3: Solo masturbation scenarios - use specialized solo generator
         elif scenario == "solo_masturbation_enhancement":
-            return self._generate_masturbation_male_script(product_name, transcript_text, gen_z, context)
-        
+            script = self._generate_masturbation_male_script(product_name, transcript_text, gen_z, context)
         # For other scenarios, use the new dynamic system
-        return self._generate_dynamic_script(product_name, transcript_text, gen_z, context)
+        else:
+            script = self._generate_dynamic_script(product_name, transcript_text, gen_z, context)
+        
+        # Ensure variety and uniqueness
+        script = self._ensure_script_variety(script)
+        
+        return script
     
     def _generate_unique_couple_variation(self, product_name: str, transcript_text: str, gen_z: bool, context: Dict[str, Any]) -> str:
         """Generate a completely unique couple intimacy variation"""
@@ -1800,7 +1867,9 @@ class EnhancedScriptGenerator:
         # DYNAMIC SCRIPT GENERATION - learns from transcript patterns
         
         # PRIORITY 1: Travel scenarios - use specialized travel generator
-        if scenario in ["solo_travel", "couple_travel", "business_couple_travel"]:
+        if scenario == "business_couple_travel":
+            return self._generate_business_travel_script(product_name, transcript, gen_z, context)
+        elif scenario in ["solo_travel", "couple_travel"]:
             return self._generate_travel_script(product_name, transcript, gen_z, context)
         
         # PRIORITY 2: Business couple scenarios - use powerful business couple generator
@@ -1832,11 +1901,23 @@ class EnhancedScriptGenerator:
         # DYNAMIC HOOKS - learns from transcript content
         hooks = self._generate_dynamic_hooks(patterns, "solo")
         
+        # SAFETY CHECK: Ensure hooks is not empty
+        if not hooks:
+            hooks = ["Ready for something amazing?", "Want to enhance your experience?", "Looking for something special?"]
+        
         # DYNAMIC BENEFITS - learns from transcript needs
         benefits = self._generate_dynamic_benefits(patterns, product_name)
         
+        # SAFETY CHECK: Ensure benefits is not empty
+        if not benefits:
+            benefits = [f"{product_name} enhances your experience.", f"{product_name} takes things to the next level."]
+        
         # DYNAMIC GUIDANCE - learns from transcript context
         guidance = self._generate_dynamic_guidance(patterns, product_name)
+        
+        # SAFETY CHECK: Ensure guidance is not empty
+        if not guidance:
+            guidance = ["Focus on what feels right.", "Trust your instincts."]
         
         # Build script dynamically
         lines = []
@@ -1866,11 +1947,23 @@ class EnhancedScriptGenerator:
         # DYNAMIC RELATIONSHIP HOOKS - learns from transcript
         hooks = self._generate_dynamic_hooks(patterns, "relationship")
         
+        # SAFETY CHECK: Ensure hooks is not empty
+        if not hooks:
+            hooks = ["Building something special together?", "Want to explore new possibilities?", "Ready to take your relationship further?"]
+        
         # DYNAMIC INTIMACY LINES - learns from transcript emotions
         intimacy_lines = self._generate_dynamic_intimacy_lines(patterns, product_name)
         
+        # SAFETY CHECK: Ensure intimacy lines is not empty
+        if not intimacy_lines:
+            intimacy_lines = [f"{product_name} deepens your connection.", f"{product_name} creates moments of pure intimacy."]
+        
         # DYNAMIC CONNECTION LINES - learns from transcript context
         connection_lines = self._generate_dynamic_connection_lines(patterns, product_name)
+        
+        # SAFETY CHECK: Ensure connection lines is not empty
+        if not connection_lines:
+            connection_lines = [f"{product_name} enhances your partnership.", f"{product_name} strengthens your relationship."]
         
         # Build script dynamically
         lines = []
@@ -1969,11 +2062,23 @@ class EnhancedScriptGenerator:
         # DYNAMIC GENERAL HOOKS - learns from transcript
         hooks = self._generate_dynamic_hooks(patterns, "general")
         
+        # SAFETY CHECK: Ensure hooks is not empty
+        if not hooks:
+            hooks = ["Ready for something amazing?", "Want to enhance your experience?", "Looking for something special?", "Ready to explore new possibilities?"]
+        
         # DYNAMIC GENERAL BENEFITS - learns from transcript
         benefits = self._generate_dynamic_benefits(patterns, product_name)
         
+        # SAFETY CHECK: Ensure benefits is not empty
+        if not benefits:
+            benefits = [f"{product_name} enhances your experience.", f"{product_name} takes things to the next level.", f"{product_name} makes every moment special."]
+        
         # DYNAMIC GENERAL GUIDANCE - learns from transcript
         guidance = self._generate_dynamic_guidance(patterns, product_name)
+        
+        # SAFETY CHECK: Ensure guidance is not empty
+        if not guidance:
+            guidance = ["Focus on what feels right.", "Trust your instincts.", "Go with what works for you."]
         
         # Build script dynamically
         lines = []
@@ -2339,6 +2444,49 @@ class EnhancedScriptGenerator:
             ])
         
         return transformations
+
+    def _ensure_script_variety(self, script: str) -> str:
+        """Ensure script has variety and doesn't repeat phrases excessively"""
+        lines = [line.strip() for line in script.split('\n') if line.strip()]
+        
+        # Check for excessive repetition of common phrases
+        phrase_counts = {}
+        for line in lines:
+            if "It's absolutely incredible" in line:
+                phrase_counts["It's absolutely incredible"] = phrase_counts.get("It's absolutely incredible", 0) + 1
+            if "dive+ is one of them" in line:
+                phrase_counts["dive+ is one of them"] = phrase_counts.get("dive+ is one of them", 0) + 1
+        
+        # If any phrase appears more than twice, replace some instances
+        for phrase, count in phrase_counts.items():
+            if count > 2:
+                # Replace with alternatives
+                alternatives = {
+                    "It's absolutely incredible": [
+                        "It's truly remarkable.",
+                        "It's absolutely amazing.",
+                        "It's genuinely impressive.",
+                        "It's really something special.",
+                        "It's absolutely fantastic."
+                    ],
+                    "dive+ is one of them": [
+                        "dive+ makes the cut.",
+                        "dive+ is essential.",
+                        "dive+ is my go-to.",
+                        "dive+ is a must-have.",
+                        "dive+ is my secret weapon."
+                    ]
+                }
+                
+                # Replace excessive repetitions
+                replacement_count = count - 2  # Keep max 2 instances
+                for i, line in enumerate(lines):
+                    if phrase in line and replacement_count > 0:
+                        alt = alternatives[phrase][replacement_count % len(alternatives[phrase])]
+                        lines[i] = line.replace(phrase, alt)
+                        replacement_count -= 1
+        
+        return '\n'.join(lines)
 
 def main():
     """Test the enhanced script generator"""
