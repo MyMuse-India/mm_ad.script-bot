@@ -1,19 +1,39 @@
 
+# Core Flask & Web Framework
 flask==3.0.2
 flask-login==0.6.3
 flask-sqlalchemy==3.1.1
 flask-wtf==1.2.1
 flask-limiter==3.5.0
 python-dotenv==1.0.1
+
+# Production WSGI Server
+waitress==3.0.0
+
+# HTTP & API
 requests==2.32.3
-beautifulsoup4==4.12.2
-lxml==5.2.2
+openai==1.30.1
+
+# Data Processing & ML
 nltk==3.8.1
 scikit-learn==1.4.2
-openai==1.30.1
-faster-whisper==1.0.3
-yt-dlp==2024.8.6
-undetected-chromedriver==3.5.5
-selenium==4.23.1
-soundfile==0.12.1
 numpy==1.26.4
+
+# Media Processing
+faster-whisper==1.0.3
+soundfile==0.12.1
+imageio-ffmpeg==0.5.1
+yt-dlp==2024.8.6
+
+# Web Scraping
+beautifulsoup4==4.12.2
+lxml==5.2.2
+selenium==4.23.1
+undetected-chromedriver==3.5.5
+
+# System Monitoring (Production)
+psutil==5.9.8
+
+# Security & Performance
+cryptography==42.0.5
+gunicorn==21.2.0
