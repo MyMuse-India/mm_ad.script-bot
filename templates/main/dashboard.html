@@ -67,11 +67,26 @@
         
         <hr>
         
-        <!-- Step 2: Paste Transcript + Auto-Detect Product -->
+        <!-- Step 2: Paste Transcript + Choose Product (No Auto-Detect) -->
         <div class="mb-4">
-          <h6 class="text-success">Step 2: Paste Transcript + Auto-Detect Product</h6>
-          <form method="post" action="{{ url_for('auto_detect_product') }}">
+          <h6 class="text-success">Step 2: Paste Transcript + Choose Product</h6>
+          <form method="post" action="{{ url_for('generate_route') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-3">
+              <label class="form-label">Select MyMuse Product:</label>
+              <select class="form-select" name="product_name" required>
+                <option value="">Choose a product...</option>
+                <option value="dive+">Dive+</option>
+                <option value="link+">Link+</option>
+                <option value="beat">Beat</option>
+                <option value="breeze">Breeze</option>
+                <option value="groove+">Groove+</option>
+                <option value="edge">Edge</option>
+                <option value="pulse">Pulse</option>
+                <option value="flick">Flick</option>
+                <option value="oh! please gel">Oh! Please Gel</option>
+              </select>
+            </div>
             <div class="mb-3">
               <label class="form-label">Paste Your Transcript:</label>
               <textarea class="form-control" name="transcript_text" rows="4" placeholder="Paste your transcript here..." required></textarea>
@@ -98,7 +113,7 @@
               </div>
             </div>
             
-            <button type="submit" class="btn btn-success w-100">🔍 Auto-Detect Product & Generate</button>
+            <button type="submit" class="btn btn-success w-100">✨ Generate with Selected Product</button>
           </form>
         </div>
         
