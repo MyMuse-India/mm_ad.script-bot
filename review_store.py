@@ -121,6 +121,26 @@ class ReviewIndex:
                     combined_text = f"{p} - {' '.join(description_parts)}"
                     cls._docs.append(_Doc(product_name=p, text=combined_text))
                     added += 1
+
+                # Also populate a lightweight product features cache for generation prompts
+                try:
+                    from typing import List as _List
+                    global _PRODUCT_FEATURES_CACHE  # type: ignore
+                    if '_PRODUCT_FEATURES_CACHE' not in globals():
+                        _PRODUCT_FEATURES_CACHE = {}
+                    parts: _List[str] = []
+                    for key in [
+                        'features', 'app_features', 'control_type', 'primary_use',
+                        'specs_run_time_hours', 'specs_modes', 'waterproof',
+                        'noise_level', 'material'
+                    ]:
+                        val = (row.get(key) or '').strip()
+                        if val:
+                            parts.append(val)
+                    if parts:
+                        _PRODUCT_FEATURES_CACHE[p.lower()] = parts
+                except Exception:
+                    pass
         
         # Format 3: Generic CSV with any structure - try to extract meaningful text
         else:
