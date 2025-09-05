@@ -769,10 +769,20 @@ def generate_route():
         genz_mode = request.form.get("genz_mode") == "on"
         
         try:
-            result = generate_variations(product_name, transcript_text, analysis, rel_reviews=rel_reviews, instagram_mode=instagram_mode, pg13_mode=pg13_mode, genz_mode=genz_mode)
-            generated = (result.get("variations", [{}])[0].get("text", "") or "").strip() or "No output."
+            # Use full generator to get primary script + 10 variations
+            result = generate(
+                product_name,
+                transcript_text,
+                sent,
+                phrases_list,
+                theme_map,
+                rel_reviews=rel_reviews,
+                output_style=None,
+                gen_z=genz_mode,
+            )
+            generated = (result.get("generated_script") or "").strip() or "No output."
             variations = result.get("variations", [])
-            summary = result.get("summary", "")
+            summary = ""
         except Exception as e:
             logger.error(f"Error in generate_variations: {e}")
             generated = "Generation failed"
@@ -1151,15 +1161,15 @@ def _detect_product_from_transcript(transcript_text: str) -> str:
     # Find the product with highest score
     best_product = max(product_scores.items(), key=lambda x: x[1])
     
-    # If no clear match, use context clues
+    # If no clear match, use neutral context clues (no travel bias)
     if best_product[1] == 0:
-        if any(word in transcript_lower for word in ["travel", "airport", "security", "tsa"]):
-            return "dive+"  # Travel-friendly
-        elif any(word in transcript_lower for word in ["couples", "partner", "long distance"]):
-            return "link+"  # Couples-focused
-        elif any(word in transcript_lower for word in ["quick", "fast", "discreet"]):
-            return "beat"   # Quick sessions
-        elif any(word in transcript_lower for word in ["different", "unique", "sensation"]):
+        if any(word in transcript_lower for word in ["couples", "partner", "long distance", "distance"]):
+            return "link+"  # Couples-focused without implying travel
+        elif any(word in transcript_lower for word in ["quick", "fast", "discreet", "compact"]):
+            return "beat"   # Quick sessions / discreet
+        elif any(word in transcript_lower for word in ["wand", "flexible", "massage", "knot", "tension"]):
+            return "groove+"  # Wand vibes for relaxation/ritual
+        elif any(word in transcript_lower for word in ["air pulse", "suction", "different sensation"]):
             return "breeze" # Unique technology
         else:
             return "dive+"  # Default to most popular
