@@ -905,94 +905,55 @@ Your adventure awaits."""
         return max(-100, min(100, score))
     
     def _generate_travel_script(self, product_name: str, transcript_text: str, gen_z: bool, context: Dict[str, Any]) -> str:
-        """Generate travel-focused script with excitement matching transcript energy"""
+        """Generate travel-focused script with strict context gating and no hardcoded clichés"""
         
         try:
-            # Analyze transcript energy level
+            # Analyze transcript and enforce strict travel gating: require ≥2 distinct travel tokens
             transcript_lower = transcript_text.lower()
+            travel_tokens = ["airport", "flight", "trip", "journey", "security", "tsa", "travel"]
+            present = {t for t in travel_tokens if t in transcript_lower}
+            if len(present) < 2:
+                # Not enough evidence of travel: return a neutral, non-travel script fragment
+                lines = []
+                lines.append(f"{product_name} fits right in — app-enabled, body-safe, and discreet.")
+                lines.append("Small rituals, big shift. Make space for what feels good.")
+                return "\n".join(lines)
+
             is_excited = any(word in transcript_lower for word in ["look who", "gotta love", "we made it", "everything's all good"])
             is_confident = any(word in transcript_lower for word in ["we really like", "take each other places", "made it"])
             
             lines = []
             
             # Dynamic opening based on transcript energy
+            # Openers derived from transcript sentiment; remove cliché phrases
+            openings = []
             if is_excited:
                 openings = [
-                    f"Look who's coming with me on this trip! {product_name} is my secret weapon.",
-                    f"Guess what's in my bag? {product_name} is my travel essential.",
-                    f"Ready for this? {product_name} is my journey companion.",
-                    f"Plot twist: {product_name} is my travel hack.",
-                    f"Story time: {product_name} makes every trip better."
+                    f"Okay, airport dash — and yes, {product_name} made the cut.",
+                    f"Bag's packed, flight's soon — {product_name} comes with, obviously.",
                 ]
             else:
                 openings = [
-                    f"Every journey needs a companion. {product_name} is mine.",
-                    f"My travel essentials are simple. {product_name} is one of them.",
-                    f"Some things you don't leave behind. {product_name} is one of them.",
-                    f"Travel feels lighter with {product_name} by my side.",
-                    f"It fits in, quietly. {product_name} is my secret."
+                    f"Long day, early flight — {product_name} stays in the bag.",
+                    f"Quiet check-in, carry-on ready — {product_name} included.",
                 ]
-            
             lines.append(random.choice(openings))
             
             # Security/airport line with variety
-            security_lines = [
-                "Security never clocks it — it's that subtle.",
-                "Airport checks don't notice a thing.",
-                "Security won't know what hit them — it's that quiet.",
-                "Even TSA doesn't see it coming.",
-                "Security check? No problem — it's whisper-quiet.",
-                "Airport security never notices dive+.",
-                "Security never knows what's in my bag.",
-                "Even airport checks don't notice."
-            ]
-            lines.append(random.choice(security_lines))
+            # Subtle compliance mention without explicit TSA claims
+            lines.append("Checks are smooth — it's discreet and quiet.")
             
             # Comfort/companionship line
-            comfort_lines = [
-                "It's like having a secret that makes every trip better.",
-                "It's my companion in every journey.",
-                "It's part of how I move through the world.",
-                "It's just part of my travel routine.",
-                "It's like having a special travel companion.",
-                "It's my secret weapon for every adventure.",
-                "It's what makes every journey special.",
-                "It's my essential travel hack."
-            ]
-            lines.append(random.choice(comfort_lines))
+            lines.append("It fits the routine without a fuss — easy, discreet, done.")
             
             # Journey enhancement line
-            journey_lines = [
-                "We're about to make this journey extraordinary.",
-                "We're about to turn this flight into an adventure.",
-                "We're about to make this trip unforgettable.",
-                "We're about to create some amazing memories.",
-                "We're about to make this journey legendary.",
-                "We're about to turn this trip into something special.",
-                "We're about to make this flight incredible.",
-                "We're about to take this journey to the next level."
-            ]
-            lines.append(random.choice(journey_lines))
+            lines.append("Little comforts go a long way when you're in transit.")
             
             # Dynamic ending based on context
             if is_confident:
-                endings = [
-                    "Let's just say we love taking pleasure places.",
-                    "Let's just say we love exploring together.",
-                    "Let's just say we love making memories.",
-                    "Let's just say we love the journey.",
-                    "Let's just say we love the adventure."
-                ]
+                lines.append("We keep it simple and focus on what feels good.")
             else:
-                endings = [
-                    "Ready to discover something new?",
-                    "Time to elevate your experience.",
-                    "Your adventure awaits.",
-                    "Let's make this trip count.",
-                    "Ready to feel amazing?"
-                ]
-            
-            lines.append(random.choice(endings))
+                lines.append("Tiny wins add up — that's the vibe.")
             
             # Add banger ending
             banger = random.choice(self.banger_endings)
@@ -1004,14 +965,8 @@ Your adventure awaits."""
             
         except Exception as e:
             print(f"ERROR in travel script generation: {e}")
-            # FALLBACK: Return a basic travel script
-            fallback_script = f"""Every journey needs a companion. {product_name} is mine.
-Security never clocks it — it's that subtle.
-It's like having a secret that makes every trip better.
-We're about to make this journey extraordinary.
-Let's just say we love taking pleasure places.
-{random.choice(self.banger_endings)}"""
-            return fallback_script
+            # FALLBACK: Neutral, non-travel fragment to avoid off-topic leakage
+            return f"{product_name} fits right in — app-enabled, body-safe, and discreet.\nMake space for what feels good."
     
     def _generate_business_travel_script(self, product_name: str, transcript_text: str, gen_z: bool, context: Dict[str, Any]) -> str:
         """Generate a business travel couple script with luxury/intimacy focus"""
